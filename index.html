@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Leads & Conversão Comercial — CV CRM</title>
+    <!-- Google Fonts: Inter (Sym BI Design System) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons para Design System Novo -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js para Visualização de Dados -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Styleheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- SIDEBAR DE FILTROS E CONFIGURAÇÕES -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg class="brand-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" style="width: 28px; height: 28px; flex-shrink: 0; transition: var(--transition-smooth);">
+                    <rect x="2" y="2" width="60" height="60" rx="16" fill="var(--primary-color)"></rect>
+                    <path d="M40 16 L24 48" stroke="#FBF8F3" stroke-width="6" stroke-linecap="round"></path>
+                </svg>
+                <div class="brand-name">Dados <em>CV</em></div>
+            </div>
+            <button class="theme-toggle-btn" id="btn-theme-toggle" aria-label="Alternar Tema" title="Alternar tema">
+                <i data-lucide="moon"></i>
+            </button>
+        </div>
+
+        <!-- MENU DE NAVEGAÇÃO DE ABAS (BI MULTI-PAINEL) -->
+        <nav class="nav-menu" id="nav-menu" aria-label="Navegação do Painel">
+            <button class="nav-item active" data-tab="comercial">
+                <i data-lucide="bar-chart-3"></i> Funil comercial
+            </button>
+            <button class="nav-item" data-tab="diretoria">
+                <i data-lucide="award"></i> Visão de diretoria
+            </button>
+            <button class="nav-item" data-tab="coordenadores">
+                <i data-lucide="users"></i> Coordenadores
+            </button>
+            <button class="nav-item" data-tab="saude-crm">
+                <i data-lucide="activity"></i> Saúde do CRM
+            </button>
+        </nav>
+        
+        <!-- PAINEL DE FILTROS DINÂMICOS -->
+        <div class="filters-panel">
+            <div class="filter-title">
+                <i data-lucide="filter"></i> Filtros de negócio
+            </div>
+            
+            <!-- Barra de Resumo de Filtros Ativos -->
+            <div class="active-filters-summary" id="active-filters-summary" style="display: none;">
+                <!-- Preenchido dinamicamente via JS -->
+            </div>
+            
+            <!-- CATEGORIA 1: ATRIBUIÇÃO & EQUIPE -->
+            <div class="filter-category blue" id="cat-atribuicao">
+                <div class="category-header" style="cursor: pointer;">
+                    <span class="category-header-title">
+                        <i data-lucide="users"></i> Atribuição e equipe
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="category-badge" id="badge-atribuicao">0</span>
+                        <button class="category-clear-btn" id="clear-cat-atribuicao" style="display: none;">Limpar</button>
+                        <i data-lucide="chevron-down" class="category-chevron"></i>
+                    </div>
+                </div>
+                
+                <!-- FILTRO DE IMOBILIÁRIA -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-imobiliaria">Imobiliária e parceiros</label>
+                    <select class="filter-select" id="filter-imobiliaria">
+                        <option value="all">Todas as imobiliárias</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO DE CORRETOR -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-corretor">Corretor responsável</label>
+                    <select class="filter-select" id="filter-corretor">
+                        <option value="all">Todos os corretores</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CATEGORIA 2: JORNADA DE CONVERSÃO -->
+            <div class="filter-category green" id="cat-jornada">
+                <div class="category-header" style="cursor: pointer;">
+                    <span class="category-header-title">
+                        <i data-lucide="milestone"></i> Jornada do lead
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="category-badge" id="badge-jornada">0</span>
+                        <button class="category-clear-btn" id="clear-cat-jornada" style="display: none;">Limpar</button>
+                        <i data-lucide="chevron-down" class="category-chevron"></i>
+                    </div>
+                </div>
+
+                <!-- FILTRO DE PRIMEIRA ORIGEM -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-origem-primeira">Primeira origem</label>
+                    <select class="filter-select" id="filter-origem-primeira">
+                        <option value="all">Todas as origens (1ª)</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO DE ÚLTIMA ORIGEM -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-origem-ultima">Última origem</label>
+                    <select class="filter-select" id="filter-origem-ultima">
+                        <option value="all">Todas as origens (últ.)</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO DE PRIMEIRO EMPREENDIMENTO -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-emp-primeiro">Primeiro empreendimento</label>
+                    <select class="filter-select" id="filter-emp-primeiro">
+                        <option value="all">Todos os empreendimentos (1º)</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO DE ÚLTIMO EMPREENDIMENTO -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-emp-ultimo">Último empreendimento</label>
+                    <select class="filter-select" id="filter-emp-ultimo">
+                        <option value="all">Todos os empreendimentos (últ.)</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO DE MOMENTO DO LEAD -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-momento">Momento do lead</label>
+                    <select class="filter-select" id="filter-momento">
+                        <option value="all">Todos os momentos</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CATEGORIA 3: PERÍODO DE CONVERSÃO -->
+            <div class="filter-category orange" id="cat-periodo">
+                <div class="category-header" style="cursor: pointer;">
+                    <span class="category-header-title">
+                        <i data-lucide="calendar"></i> Período de referência
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="category-badge" id="badge-periodo">0</span>
+                        <button class="category-clear-btn" id="clear-cat-periodo" style="display: none;">Limpar</button>
+                        <i data-lucide="chevron-down" class="category-chevron"></i>
+                    </div>
+                </div>
+
+                <!-- FILTRO TEMPORAL: ANO -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-ano">Ano de referência</label>
+                    <select class="filter-select" id="filter-ano">
+                        <option value="all">Todos os anos</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO TEMPORAL: MÊS -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-mes">Mês de referência</label>
+                    <select class="filter-select" id="filter-mes">
+                        <option value="all">Todos os meses</option>
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-actions">
+            <button class="action-btn" id="btn-sync-data">
+                <i data-lucide="refresh-cw"></i> Atualizar dados
+            </button>
+            <button class="action-btn" id="btn-open-settings">
+                <i data-lucide="settings"></i> Configurar banco
+            </button>
+            
+            <div class="connection-status" id="connection-status">
+                <h3><i data-lucide="database"></i> Conexão direta</h3>
+                <p>Dados lidos em tempo real do Supabase via REST API, refletindo cargas do ETL incremental.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL DO DASHBOARD -->
+    <main class="main-content" id="main-content">
+        
+        <!-- LOADER DE DADOS -->
+        <div class="loader-overlay" id="loader">
+            <div class="spinner"></div>
+            <p id="loader-text">Consultando tabelas no Supabase…</p>
+        </div>
+
+        <!-- HEADER DA PÁGINA -->
+        <header class="dash-header">
+            <div class="dash-title">
+                <h1 id="dash-main-title">Painel de leads e conversão comercial</h1>
+                <p id="dash-main-subtitle">Análise histórica unificada e atribuição de canais</p>
+            </div>
+            <div class="dash-meta-pills">
+                <div class="dash-badge" id="sync-status">
+                    <span class="syncing-dot"></span>
+                    <span id="sync-text">Sincronizado</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================= PAGE 1: FUNIL COMERCIAL ================= -->
+        <div class="tab-pane active" id="pane-comercial">
+            <!-- CARDS DE MÉTRICAS / KPIs -->
+            <section class="kpi-row" aria-label="Indicadores de Performance">
+                <!-- TOTAL DE LEADS -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Leads totais <span class="info-tooltip" data-tooltip="Total de leads cadastrados na base no período filtrado."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="kpi-total">0</div>
+                    <div class="kpi-footer" id="kpi-total-footer">Carregando base…</div>
+                    <div class="kpi-footer-trend" id="kpi-total-trend">--</div>
+                </div>
+                
+                <!-- VISITAS AGENDADAS -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Visitas agendadas <span class="info-tooltip" data-tooltip="Total de visitas agendadas identificadas a partir do histórico de tarefas."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="kpi-visitas-agendadas">0</div>
+                    <div class="kpi-footer positive" id="kpi-agendadas-footer"><span>0%</span> taxa de agendamento</div>
+                    <div class="kpi-footer-trend" id="kpi-agendadas-trend">--</div>
+                </div>
+
+                <!-- VISITAS REALIZADAS -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Visitas realizadas <span class="info-tooltip" data-tooltip="Total de visitas efetivamente realizadas (concluídas) a partir do histórico de tarefas."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="kpi-visitas-realizadas">0</div>
+                    <div class="kpi-footer positive" id="kpi-realizadas-footer"><span>0%</span> comparecimento</div>
+                    <div class="kpi-footer-trend" id="kpi-realizadas-trend">--</div>
+                </div>
+
+                <!-- VENDAS CONCLUÍDAS -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Vendas concluídas <span class="info-tooltip" data-tooltip="Total de leads convertidos para Venda Realizada ou com reservas ativas."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="kpi-vendas">0</div>
+                    <div class="kpi-footer positive" id="kpi-vendas-footer"><span>0%</span> conversão geral</div>
+                    <div class="kpi-footer-trend" id="kpi-vendas-trend">--</div>
+                </div>
+            </section>
+
+            <!-- GRID DE PROCESSO: FUNIL CUMULATIVO & TABELA ANALÍTICA -->
+            <section class="dash-grid" aria-label="Processo de Vendas" style="margin-top: 1.5rem;">
+                <!-- FUNIL LINEAR SEM FUROS -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Funil comercial acumulado <span class="info-tooltip" data-tooltip="Totaliza leads que atingiram ou superaram cada estágio histórico. A porcentagem indica a conversão em relação à etapa anterior e o acumulado sobre o total de novos leads."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Totaliza leads que atingiram ou superaram cada estágio histórico</p>
+                        </div>
+                    </div>
+
+                    <div class="funnel-container" id="funnel-bars">
+                        <!-- Novo -->
+                        <div class="funnel-bar-wrapper">
+                            <div class="funnel-stage-name" title="Novo">1. Novo</div>
+                            <div class="funnel-bar-outer" id="funnel-stage-novo" data-stage="Novo">
+                                <div class="funnel-bar-inner stage-1" style="width: 0%;">0</div>
+                            </div>
+                            <div class="funnel-conversion-badge" id="conversion-stage-novo">100%</div>
+                        </div>
+                        
+                        <!-- Em Atendimento -->
+                        <div class="funnel-bar-wrapper">
+                            <div class="funnel-stage-name" title="Em Atendimento">2. Em atendimento</div>
+                            <div class="funnel-bar-outer" id="funnel-stage-atendimento" data-stage="Em Atendimento">
+                                <div class="funnel-bar-inner stage-2" style="width: 0%;">0</div>
+                            </div>
+                            <div class="funnel-conversion-badge" id="conversion-stage-atendimento">0%</div>
+                        </div>
+
+                        <!-- Visita Agendada -->
+                        <div class="funnel-bar-wrapper">
+                            <div class="funnel-stage-name" title="Visita Agendada">3. Visita agendada</div>
+                            <div class="funnel-bar-outer" id="funnel-stage-visita-agendada" data-stage="Visita Agendada">
+                                <div class="funnel-bar-inner stage-3" style="width: 0%;">0</div>
+                            </div>
+                            <div class="funnel-conversion-badge" id="conversion-stage-visita-agendada">0%</div>
+                        </div>
+
+                        <!-- Visita Realizada -->
+                        <div class="funnel-bar-wrapper">
+                            <div class="funnel-stage-name" title="Visita Realizada">4. Visita realizada</div>
+                            <div class="funnel-bar-outer" id="funnel-stage-visita-realizada" data-stage="Visita Realizada">
+                                <div class="funnel-bar-inner stage-4" style="width: 0%;">0</div>
+                            </div>
+                            <div class="funnel-conversion-badge" id="conversion-stage-visita-realizada">0%</div>
+                        </div>
+
+                        <!-- Proposta -->
+                        <div class="funnel-bar-wrapper">
+                            <div class="funnel-stage-name" title="Proposta">5. Proposta</div>
+                            <div class="funnel-bar-outer" id="funnel-stage-proposta" data-stage="Proposta">
+                                <div class="funnel-bar-inner stage-5" style="width: 0%;">0</div>
+                            </div>
+                            <div class="funnel-conversion-badge" id="conversion-stage-proposta">0%</div>
+                        </div>
+
+                        <!-- Venda Realizada -->
+                        <div class="funnel-bar-wrapper">
+                            <div class="funnel-stage-name" title="Venda Realizada">6. Venda</div>
+                            <div class="funnel-bar-outer" id="funnel-stage-venda" data-stage="Venda Realizada">
+                                <div class="funnel-bar-inner stage-6" style="width: 0%;">0</div>
+                            </div>
+                            <div class="funnel-conversion-badge" id="conversion-stage-venda">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DETALHAMENTO DE LEADS FILTRADO -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2 id="table-title">Lista analítica de leads <span class="info-tooltip" data-tooltip="Exibição detalhada dos leads filtrados de acordo com os critérios selecionados na barra lateral."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Leads integrados de acordo com os filtros selecionados</p>
+                        </div>
+                        <span class="tip-pill" id="leads-count-badge">0 leads</span>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="leads-table" id="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome do cliente</th>
+                                    <th>Corretor</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leads-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted);">Selecione filtros para buscar dados…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CONTROLES DE PAGINAÇÃO -->
+                    <div class="pagination">
+                        <span id="page-indicator">Página 1 de 1</span>
+                        <div class="pagination-controls">
+                            <button class="page-btn" id="btn-prev-page" disabled aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>
+                            <button class="page-btn" id="btn-next-page" disabled aria-label="Próxima página"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- EQUIPE E OPERAÇÕES: RANKING DE VENDAS & ALERTA DE SLA -->
+            <section class="dash-row-2" aria-label="Equipe e Operações" style="margin-top: 1.5rem;">
+                <!-- LEADERBOARD DE VENDAS -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Ranking de corretores <span class="info-tooltip" data-tooltip="Ranking dos corretores pelo volume de captação de leads, taxa de conversão comercial e quantidade de vendas concluídas no período filtrado."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Volume de captação, conversão comercial e fechamentos concluídos</p>
+                        </div>
+                    </div>
+
+                    <div class="list-brokers" id="brokers-leaderboard">
+                        <!-- Inserido dinamicamente via JS -->
+                    </div>
+                </div>
+
+                <!-- SLA E CONTROLE OPERACIONAL -->
+                <div class="dash-card" id="sla-panel">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2 style="color: var(--accent-red);"><i data-lucide="alert-triangle"></i> Painel operacional e alertas de SLA <span class="info-tooltip" data-tooltip="Mede os tempos medianos de resposta. A mediana evita distorções causadas por leads antigos/outliers. Mostra também alertas de leads sem interação há mais de 7 dias úteis."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Tempos médios de resposta a contatos da internet</p>
+                        </div>
+                    </div>
+
+                    <div class="sla-stats-grid">
+                        <div class="sla-stat-card">
+                            <div class="sla-stat-title">SLA mediano do gestor</div>
+                            <div class="sla-stat-number orange" id="sla-gestor-val">0.0h</div>
+                            <div class="sla-stat-subtitle">Tempo para repassar lead ao corretor</div>
+                        </div>
+                        
+                        <div class="sla-stat-card">
+                            <div class="sla-stat-title">SLA mediano do corretor</div>
+                            <div class="sla-stat-number red" id="sla-corretor-val">0.0h</div>
+                            <div class="sla-stat-subtitle">Tempo para fazer o primeiro contato</div>
+                        </div>
+                    </div>
+
+                    <!-- ALERTA OPERACIONAL DE LEADS OCIOSOS -->
+                    <div class="sla-alert-banner" id="sla-alarm-banner">
+                        <i data-lucide="bell-ring" class="sla-alert-icon"></i>
+                        <div class="sla-alert-text">
+                            <h4>Atenção operacional</h4>
+                            <p id="sla-alert-description">Não há leads ociosos sem interação na base de dados.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ATRIBUIÇÃO DE MARKETING (GRÁFICO) -->
+            <section class="dash-row-3" aria-label="Atribuição de Marketing" style="margin-top: 1.5rem;">
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Atribuição de canais de marketing <span class="info-tooltip" data-tooltip="Distribuição do volume de leads gerados pelos canais e mídias de marketing com base no primeiro contato (Captação) ou último contato (Último Toque)."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Comparativo dinâmico de performance de atração: Mídia Original vs. Mídia Último Contato</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="marketingChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+        <!-- ================= PAGE 2: VISÃO DE DIRETORIA ================= -->
+        <div class="tab-pane" id="pane-diretoria">
+            <!-- KPIs ESTATÍSTICOS EXECUTIVOS -->
+            <section class="kpi-row" aria-label="Indicadores da Diretoria">
+                <div class="kpi-card">
+                    <div class="kpi-label">Vendas fechadas <span class="info-tooltip" data-tooltip="Total de vendas consolidadas no CRM para o período filtrado."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="dir-kpi-vendas">0</div>
+                    <div class="kpi-footer positive" id="dir-kpi-vendas-footer">Total consolidado na base</div>
+                    <div class="kpi-footer-trend" id="dir-kpi-vendas-trend">--</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Taxa de conversão geral <span class="info-tooltip" data-tooltip="Percentual de leads totais que se converteram em vendas concluídas."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="dir-kpi-conversao">0.0%</div>
+                    <div class="kpi-footer positive" id="dir-kpi-conversao-footer">Leads Totais vs. Vendas</div>
+                    <div class="kpi-footer-trend" id="dir-kpi-conversao-trend">--</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Valor do negócio <span class="info-tooltip" data-tooltip="Valor do negócio estimado/declarado nos leads qualificados do período."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="dir-kpi-valor-negocio">R$ 0</div>
+                    <div class="kpi-footer neutral" id="dir-kpi-valor-negocio-footer">Ticket médio de vendas</div>
+                    <div class="kpi-footer-trend" id="dir-kpi-valor-negocio-trend">--</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Atendimentos ativos <span class="info-tooltip" data-tooltip="Total de leads que estão em etapas de atendimento ativas no funil."><i data-lucide="alert-circle"></i></span></div>
+                    <div class="kpi-value" id="dir-kpi-atendimento">0</div>
+                    <div class="kpi-footer neutral" id="dir-kpi-atendimento-footer">Funil em andamento</div>
+                    <div class="kpi-footer-trend" id="dir-kpi-atendimento-trend">--</div>
+                </div>
+            </section>
+
+            <!-- GRIDS DE PERFORMANCE COMERCIAL E PARCEIROS -->
+            <section class="dash-grid" style="margin-top: 1.5rem;">
+                <!-- RANKING DE EMPREENDIMENTOS -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Principais empreendimentos <span class="info-tooltip" data-tooltip="Ranking dos empreendimentos com maior volume de captação e interesse de leads no período selecionado."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Produtos com maior volume de negócios concluídos na base</p>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>Empreendimento</th>
+                                    <th style="text-align: center;">Leads Atraídos</th>
+                                    <th style="text-align: center;">Vendas</th>
+                                    <th style="text-align: center;">Taxa Conv.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dir-table-empreendimentos">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PERFORMANCE DE IMOBILIÁRIAS PARCEIRAS -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Desempenho de imobiliárias e parceiros <span class="info-tooltip" data-tooltip="Indica a quantidade de leads captados e vendas concluídas por imobiliária parceira no período filtrado."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Volume de leads e vendas concluídas por agência imobiliária</p>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>Imobiliária / Parceiro</th>
+                                    <th style="text-align: center;">Atendidos</th>
+                                    <th style="text-align: center;">Vendas</th>
+                                    <th style="text-align: center;">Conversão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dir-table-imobiliarias">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NOVO GRID: ORIGEM E MÍDIA DE ÚLTIMO CONTATO DAS VENDAS -->
+            <section class="dash-grid" style="margin-top: 1.5rem;">
+                <!-- ORIGENS DE ÚLTIMO TOQUE DAS VENDAS -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Origens das vendas <span class="info-tooltip" data-tooltip="Exibe as origens responsáveis pelo último contato antes do fechamento das vendas concluídas."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Fontes de captação responsáveis pelo último contato das vendas fechadas</p>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>Origem (Último Contato)</th>
+                                    <th style="text-align: center;">Vendas Concluídas</th>
+                                    <th style="text-align: center;">Participação %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dir-table-origens-vendas">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CANAIS DE MÍDIA DE ÚLTIMO TOQUE DAS VENDAS -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Mídias das vendas <span class="info-tooltip" data-tooltip="Identifica os canais de mídia (paga, orgânica, etc.) responsáveis pelo último contato das vendas concluídas."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Canais de mídias pagas/orgânicas que geraram as vendas fechadas</p>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="dirMediaSalesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GRÁFICO HISTÓRICO DE VENDAS -->
+            <section class="dash-row-3" style="margin-top: 1.5rem;">
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Evolução mensal de fechamentos <span class="info-tooltip" data-tooltip="Histórico mensal das vendas convertidas para análise comparativa de sazonalidade e fechamento."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Demonstrativo dinâmico de conversões de acordo com o ano e filtros ativos</p>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="dirSalesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+        <!-- ================= PAGE 3: VISÃO DE COORDENADORES ================= -->
+        <div class="tab-pane" id="pane-coordenadores">
+            <!-- COORDENADORES KPIs -->
+            <section class="kpi-row" aria-label="Indicadores dos Coordenadores">
+                <div class="kpi-card">
+                    <div class="kpi-label">Fila de reatribuição</div>
+                    <div class="kpi-value" id="coord-kpi-reatribuicao">0</div>
+                    <div class="kpi-footer negative" id="coord-kpi-reatribuicao-footer">Leads ociosos > 7 dias</div>
+                    <div class="kpi-footer-trend" id="coord-kpi-reatribuicao-trend">--</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Corretores ativos</div>
+                    <div class="kpi-value" id="coord-kpi-corretores">0</div>
+                    <div class="kpi-footer positive" id="coord-kpi-corretores-footer">Em atendimento na base</div>
+                    <div class="kpi-footer-trend" id="coord-kpi-corretores-trend">--</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Média de leads por corretor</div>
+                    <div class="kpi-value" id="coord-kpi-media-leads">0</div>
+                    <div class="kpi-footer neutral" id="coord-kpi-media-leads-footer">Carga média da equipe</div>
+                    <div class="kpi-footer-trend" id="coord-kpi-media-leads-trend">--</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Leads ganhos no mês</div>
+                    <div class="kpi-value" id="coord-kpi-ganhos">0</div>
+                    <div class="kpi-footer positive" id="coord-kpi-ganhos-footer">Vendas em andamento</div>
+                    <div class="kpi-footer-trend" id="coord-kpi-ganhos-trend">--</div>
+                </div>
+            </section>
+
+            <!-- GRID OPERACIONAL: CARGA DE EQUIPE & LEADS CRÍTICOS -->
+            <section class="dash-grid" style="margin-top: 1.5rem;">
+                <!-- CARGA E DESEMPENHO DA EQUIPE DE CORRETORES -->
+                <div class="dash-card" style="min-height: 450px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Carga operacional de corretores <span class="info-tooltip" data-tooltip="Volume de leads ativos, ociosos e a taxa de conversão final para cada corretor da equipe."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Volume ativo, ociosos e conversão comercial por corretor de equipe</p>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>Corretor</th>
+                                    <th style="text-align: center;">Ativo (Funil)</th>
+                                    <th style="text-align: center;">Vendas</th>
+                                    <th style="text-align: center;">Ociosos</th>
+                                    <th style="text-align: center;">Conversão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coord-table-corretores">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- FILA URGENTE DE LEADS CRÍTICOS SEM ATENDIMENTO -->
+                <div class="dash-card" style="min-height: 450px; border-color: rgba(239, 68, 68, 0.25);">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2 style="color: var(--accent-red);"><i data-lucide="alert-triangle"></i> Fila de reatribuição prioritária <span class="info-tooltip" data-tooltip="Leads ativos and sem vendas concluídas que não possuem nenhuma interação (ligação ou contato) registrada no CRM há mais de 7 dias úteis."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Leads em andamento sem NENHUMA interação/ligação há mais de 7 dias úteis</p>
+                        </div>
+                        <span class="tip-pill" style="background: rgba(239, 68, 68, 0.12); color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3);">Urgente</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="leads-table" id="reassignment-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Lead</th>
+                                    <th>Corretor</th>
+                                    <th>Dias Inativo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coord-table-criticos">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+        <!-- ================= PAGE 4: SAÚDE DO CRM ================= -->
+        <div class="tab-pane" id="pane-saude-crm">
+            <!-- CRM AUDIT KPIs -->
+            <section class="kpi-row" aria-label="Indicadores de Saúde do CRM">
+                <div class="kpi-card">
+                    <div class="kpi-label">Leads sem corretor</div>
+                    <div class="kpi-value" id="crm-kpi-sem-corretor">0</div>
+                    <div class="kpi-footer negative" id="crm-kpi-sem-corretor-footer">Aguardando distribuição</div>
+                    <div class="kpi-footer-trend" id="crm-kpi-sem-corretor-trend">--</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Cadastros incompletos</div>
+                    <div class="kpi-value" id="crm-kpi-incompleto">0.0%</div>
+                    <div class="kpi-footer negative" id="crm-kpi-incompleto-footer">Sem telefone ou e-mail</div>
+                    <div class="kpi-footer-trend" id="crm-kpi-incompleto-trend">--</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Média de lead score</div>
+                    <div class="kpi-value" id="crm-kpi-score">0.0</div>
+                    <div class="kpi-footer positive" id="crm-kpi-score-footer">Qualidade média da base</div>
+                    <div class="kpi-footer-trend" id="crm-kpi-score-trend">--</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Índice de qualidade</div>
+                    <div class="kpi-value" id="crm-kpi-saude">0.0%</div>
+                    <div class="kpi-footer positive" id="crm-kpi-saude-footer">Conformidade de dados</div>
+                    <div class="kpi-footer-trend" id="crm-kpi-saude-trend">--</div>
+                </div>
+            </section>
+
+            <!-- ANALYTICS GRID: MOTIVOS DE DESCARTES & TABELA DE AUDITORIA -->
+            <section class="dash-grid" style="margin-top: 1.5rem;">
+                <!-- MOTIVOS DE CANCELAMENTO / DESCARTES -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Principais motivos de descarte de leads <span class="info-tooltip" data-tooltip="Distribuição das justificativas de perda de negócio e descartes de leads mais frequentes inseridos no CRM."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Fatores indicados pelos corretores para arquivamento ou cancelamento do lead</p>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="crmDiscardChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AUDITORIA COMPLETA DE QUALIDADE E INTEGRAÇÃO -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Relatório de auditoria de integração <span class="info-tooltip" data-tooltip="Verifica a integridade e completude dos dados sincronizados do CRM (ex: leads com e-mail, telefone ou corretor preenchidos)."><i data-lucide="alert-circle"></i></span></h2>
+                            <p>Status de conformidade e integridade das cargas brutas do ETL</p>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>Item Auditado</th>
+                                    <th style="text-align: center;">Preenchidos</th>
+                                    <th style="text-align: center;">Incompletos</th>
+                                    <th style="text-align: center;">Conformidade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crm-table-audit">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- MODAL DE CONFIGURAÇÃO DO BANCO (SUPABASE) -->
+    <div class="modal-backdrop" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i data-lucide="settings"></i> Configurações do Supabase</h3>
+                <button class="close-btn" id="btn-close-settings" aria-label="Fechar configurações">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+                    Configure as chaves públicas da sua base do Supabase. Estas chaves são gravadas de forma 100% segura apenas no seu navegador (**localStorage**) e usadas para efetuar requisições REST públicas de leitura de dados.
+                </p>
+
+                <!-- INPUT PROJECT REF -->
+                <div class="input-group">
+                    <label class="input-label" for="settings-project-ref">ID da Referência do Projeto (Project Ref)</label>
+                    <input type="text" class="text-input" id="settings-project-ref" placeholder="ex: zprybshuoakdjqtdqgog…" autocomplete="off" spellcheck="false" required>
+                </div>
+
+                <!-- INPUT ANON KEY -->
+                <div class="input-group">
+                    <label class="input-label" for="settings-anon-key">Chave Pública Anon (Anon Key)</label>
+                    <input type="password" class="text-input" id="settings-anon-key" placeholder="ex: eyJhbGciOi… (Chave anon)" autocomplete="off" spellcheck="false" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn" id="btn-restore-default">Restaurar Padrão</button>
+                <button class="action-btn primary" id="btn-save-settings">Salvar Configuração</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de lógica de negócios -->
+    <script src="app.js"></script>
+</body>
+</html>
